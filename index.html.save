@@ -1,0 +1,1769 @@
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Saravanan Professional Grocery Store – Smart Shop Manager</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Noto Sans Tamil -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- QRCode.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            tea: { light: '#E6CCB2', DEFAULT: '#8D5B4C', dark: '#5C3A2E' },
+            leaf: { DEFAULT: '#2E7D32', dark: '#1B5E20', light: '#A5D6A7' },
+            turmeric: { DEFAULT: '#F59E0B', light: '#FEF3C7', dark: '#B45309' },
+            cream: '#FFFBEB'
+          },
+          fontFamily: {
+            sans: ['"Noto Sans Tamil"', 'system-ui', '-apple-system', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Safe Area and Micro-animations */
+    body {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .safe-top { padding-top: max(0.75rem, env(safe-area-inset-top)); }
+    .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+    
+    .touch-target { min-height: 48px; min-width: 48px; }
+    
+    @keyframes bell-ring {
+      0%, 100% { transform: rotate(0deg); }
+      20%, 60% { transform: rotate(15deg); }
+      40%, 80% { transform: rotate(-15deg); }
+    }
+    .animate-ring { animation: bell-ring 0.8s ease-in-out infinite; }
+    
+    @keyframes heart-pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+    .animate-pop { animation: heart-pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body class="h-full bg-cream dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
+
+  <!-- TOP APP HEADER -->
+  <header class="bg-tea text-white safe-top px-3 py-2.5 shadow-md sticky top-0 z-30">
+    <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
+      <!-- Shop Title & Contacts -->
+      <div class="flex items-center gap-2 overflow-hidden">
+        <span class="text-2xl">☕</span>
+        <div class="truncate">
+          <h1 class="font-extrabold text-sm md:text-base leading-tight truncate">சரவணன் புரோஃபெஷனல் மளிகை கடை</h1>
+          <p class="text-[11px] text-tea-light flex items-center gap-1.5 truncate">
+            <span>SARAVANAN S P</span>
+            <span>•</span>
+            <a href="tel:9842771765" target="_blank" onclick="handleCallClick('9842771765')" class="underline hover:text-white">9842771765</a>
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Icons & Toggles -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <!-- Direct Call Shortcuts -->
+        <a href="tel:9842771765" target="_blank" onclick="handleCallClick('9842771765')" class="p-2 bg-leaf hover:bg-leaf-dark text-white rounded-full touch-target flex items-center justify-center shadow text-sm" title="Call Saravanan">📞</a>
+        
+        <!-- Alert Bell -->
+        <button onclick="openAlertsModal()" class="relative p-2 bg-tea-dark/60 rounded-full touch-target flex items-center justify-center text-lg" title="Notifications">
+          🔔
+          <span id="alert-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-tea animate-ring">0</span>
+        </button>
+
+        <!-- Dark Mode Toggle -->
+        <button onclick="toggleDarkMode()" class="p-2 bg-tea-dark/60 rounded-full touch-target flex items-center justify-center text-sm" title="Toggle Theme">
+          <span id="theme-icon">🌙</span>
+        </button>
+
+        <!-- Language Toggle -->
+        <button onclick="toggleLanguage()" class="bg-turmeric text-amber-950 font-bold px-2.5 py-1.5 rounded-xl text-xs border border-amber-600 shadow touch-target flex items-center justify-center">
+          <span id="lang-toggle-text">EN</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- GLOBAL SMART SEARCH BAR -->
+    <div class="max-w-4xl mx-auto mt-2 relative">
+      <div class="relative flex items-center">
+        <input type="text" id="global-search" oninput="handleGlobalSearch()" placeholder="தேடவும் (அரிசி, Sugar, Milk, முருகன்...)" class="w-full pl-9 pr-10 py-2 text-xs md:text-sm text-slate-900 rounded-xl bg-white/95 dark:bg-slate-800 dark:text-white border border-tea-light/50 focus:outline-none focus:ring-2 focus:ring-leaf shadow-inner" />
+        <span class="absolute left-3 text-slate-400 text-xs">🔍</span>
+        <button onclick="startVoiceSearch('search')" class="absolute right-1.5 p-1.5 text-tea hover:text-leaf dark:text-tea-light rounded-lg touch-target flex items-center justify-center" title="Voice Search">
+          🎙️
+        </button>
+      </div>
+      <!-- Dropdown Results -->
+      <div id="search-results-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 max-h-72 overflow-y-auto z-50 p-2 space-y-1"></div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER (5 SCREEN TABS) -->
+  <main class="flex-1 max-w-4xl w-full mx-auto p-3 md:p-4 overflow-y-auto pb-24">
+    
+    <!-- 1. HOME SCREEN -->
+    <section id="tab-home" class="space-y-4">
+      <!-- Greeting Header -->
+      <div class="bg-gradient-to-r from-tea to-tea-dark text-white p-4 rounded-3xl shadow-md flex justify-between items-center">
+        <div>
+          <p class="text-xs text-tea-light font-medium" id="greeting-time">வணக்கம் அண்ணா</p>
+          <h2 class="text-xl font-extrabold" id="greeting-title">Vanakkam Anna! 🙏</h2>
+          <p class="text-xs text-amber-200 mt-1" data-i18n="homeSub">இன்றைய கடை செயல்பாடு விவரங்கள்</p>
+        </div>
+        <div class="text-4xl">🏪</div>
+      </div>
+
+      <!-- Key Business Dashboard Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <!-- Today Sales -->
+        <div onclick="switchTab('bill')" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl shadow-sm border-l-4 border-emerald-500 cursor-pointer active:scale-95 transition-transform">
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 font-bold" data-i18n="todaySales">இன்றைய விற்பனை</p>
+          <p class="text-lg md:text-xl font-black text-slate-800 dark:text-white mt-0.5" id="dash-sales">₹0.00</p>
+        </div>
+
+        <!-- Estimated Profit -->
+        <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl shadow-sm border-l-4 border-leaf">
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 font-bold" data-i18n="todayProfit">மதிப்பிடப்பட்ட லாபம்</p>
+          <p class="text-lg md:text-xl font-black text-leaf mt-0.5" id="dash-profit">₹0.00</p>
+        </div>
+
+        <!-- Credit Due -->
+        <div onclick="switchTab('credit')" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl shadow-sm border-l-4 border-red-500 cursor-pointer active:scale-95 transition-transform">
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 font-bold" data-i18n="creditDue">மொத்த கடன் நிலுவை</p>
+          <p class="text-lg md:text-xl font-black text-red-600 dark:text-red-400 mt-0.5" id="dash-credit">₹0.00</p>
+        </div>
+
+        <!-- Low Stock Count -->
+        <div onclick="switchTab('stock')" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl shadow-sm border-l-4 border-amber-500 cursor-pointer active:scale-95 transition-transform">
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 font-bold" data-i18n="lowStockCount">இருப்பு குறைவு</p>
+          <p class="text-lg md:text-xl font-black text-amber-600 dark:text-amber-400 mt-0.5" id="dash-low-stock">0 Items</p>
+        </div>
+
+        <!-- Expiring Soon Count -->
+        <div onclick="switchTab('stock')" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl shadow-sm border-l-4 border-orange-500 cursor-pointer active:scale-95 transition-transform">
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 font-bold" data-i18n="expiringCount">காலாவதி விரைவில்</p>
+          <p class="text-lg md:text-xl font-black text-orange-600 dark:text-orange-400 mt-0.5" id="dash-expiring">0 Items</p>
+        </div>
+
+        <!-- Tea Cups Sold -->
+        <div onclick="switchTab('more')" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl shadow-sm border-l-4 border-tea cursor-pointer active:scale-95 transition-transform">
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 font-bold" data-i18n="teaCupsSold">டீ விற்ற எண்ணிக்கை</p>
+          <p class="text-lg md:text-xl font-black text-tea-dark dark:text-tea-light mt-0.5" id="dash-tea-cups">0 Cups</p>
+        </div>
+      </div>
+
+      <!-- Quick Alert Summary Card -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-orange-100 dark:border-slate-700">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+          <span data-i18n="quickAlerts">முக்கிய எச்சரிக்கைகள்</span>
+          <span id="alerts-count-tag" class="text-[10px] bg-red-100 text-red-700 font-extrabold px-2 py-0.5 rounded-full">0 Active</span>
+        </h3>
+        <div id="home-alerts-list" class="space-y-2 text-xs">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. BILL / POS SCREEN -->
+    <section id="tab-bill" class="hidden space-y-4">
+      <!-- Categories & Filter Chips -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+        <button onclick="filterBillCategory('all')" id="cat-all" class="px-3 py-2 rounded-xl font-bold bg-tea text-white shadow shrink-0 touch-target">
+          🛍️ <span data-i18n="catAll">அனைத்தும்</span>
+        </button>
+        <button onclick="filterBillCategory('fav')" id="cat-fav" class="px-3 py-2 rounded-xl font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border shrink-0 touch-target">
+          ❤️ <span data-i18n="catFav">விருப்பமானவை</span>
+        </button>
+        <button onclick="filterBillCategory('grocery')" id="cat-grocery" class="px-3 py-2 rounded-xl font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border shrink-0 touch-target">
+          🌾 <span data-i18n="catGrocery">மளிகை</span>
+        </button>
+        <button onclick="filterBillCategory('tea')" id="cat-tea" class="px-3 py-2 rounded-xl font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border shrink-0 touch-target">
+          ☕ <span data-i18n="catTea">டீ & ஸ்நாக்ஸ்</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <!-- Product Tiles Grid -->
+        <div class="lg:col-span-7 bg-white dark:bg-slate-800 p-3 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+          <div id="bill-product-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[460px] overflow-y-auto pr-1">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Cart & Checkout Side Panel -->
+        <div class="lg:col-span-5 bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-md border-2 border-tea flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2 mb-2">
+              <h3 class="font-extrabold text-sm text-tea-dark dark:text-tea-light flex items-center gap-1.5">
+                🛒 <span data-i18n="currentCart">தற்போதைய கார்ட்</span>
+              </h3>
+              <button onclick="clearCart()" class="text-[11px] text-red-500 hover:underline font-bold touch-target">Clear</button>
+            </div>
+
+            <!-- Customer Picker for Credit/Udhaar -->
+            <div class="mb-3">
+              <label class="block text-[10px] font-bold text-slate-400 mb-1" data-i18n="selectCustomer">வாடிக்கையாளர் (கடன் என்றால் மட்டும்):</label>
+              <select id="bill-customer-select" class="w-full text-xs p-2 rounded-xl border border-slate-200 dark:bg-slate-700 dark:text-white dark:border-slate-600 focus:outline-none">
+                <option value="">-- ரொக்கம் / Cash Sale --</option>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <!-- Cart Items Scroll -->
+            <div id="cart-items-list" class="space-y-2 max-h-48 overflow-y-auto pr-1 mb-3 text-xs">
+              <!-- Cart Items Populated -->
+            </div>
+          </div>
+
+          <!-- Totals & Payment Buttons -->
+          <div class="border-t border-slate-100 dark:border-slate-700 pt-3 space-y-2 bg-cream/50 dark:bg-slate-900/50 p-3 rounded-2xl">
+            <div class="flex justify-between text-sm font-extrabold">
+              <span data-i18n="total">மொத்த தொகை:</span>
+              <span id="cart-total-amount" class="text-slate-900 dark:text-white text-base">₹0.00</span>
+            </div>
+            <div class="flex justify-between text-[11px] font-bold text-leaf">
+              <span data-i18n="estProfit">லாபம் (Profit):</span>
+              <span id="cart-total-profit">₹0.00</span>
+            </div>
+
+            <!-- Payment Options -->
+            <div class="grid grid-cols-3 gap-1.5 pt-1">
+              <button onclick="handleCheckout('CASH')" class="bg-leaf hover:bg-leaf-dark text-white font-extrabold py-3 rounded-xl shadow active:scale-95 transition-transform touch-target flex flex-col items-center justify-center">
+                <span class="text-[10px] opacity-90" data-i18n="cash">ரொக்கம்</span>
+                <span class="text-xs">💵 CASH</span>
+              </button>
+              <button onclick="handleCheckout('UPI')" class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl shadow active:scale-95 transition-transform touch-target flex flex-col items-center justify-center">
+                <span class="text-[10px] opacity-90">ஜிபே / UPI</span>
+                <span class="text-xs">📱 UPI</span>
+              </button>
+              <button onclick="handleCheckout('CREDIT')" class="bg-turmeric hover:bg-amber-500 text-amber-950 font-extrabold py-3 rounded-xl shadow active:scale-95 transition-transform touch-target flex flex-col items-center justify-center">
+                <span class="text-[10px] opacity-90" data-i18n="credit">கடன்</span>
+                <span class="text-xs">📖 UDHAAR</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. STOCK / INVENTORY SCREEN -->
+    <section id="tab-stock" class="hidden space-y-4">
+      <div class="flex justify-between items-center gap-2">
+        <h2 class="font-extrabold text-base text-slate-800 dark:text-white" data-i18n="stockTitle">சரக்கு இருப்பு மேலாண்மை</h2>
+        <button onclick="openProductModal()" class="bg-leaf hover:bg-leaf-dark text-white text-xs font-bold px-3 py-2 rounded-xl shadow touch-target flex items-center gap-1">
+          <span>➕</span> <span data-i18n="addProduct">புதிய பொருள்</span>
+        </button>
+      </div>
+
+      <!-- Stock List Table / Cards -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 p-3">
+        <div id="stock-items-list" class="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. CREDIT / UDHAAR LEDGER SCREEN -->
+    <section id="tab-credit" class="hidden space-y-4">
+      <div class="flex justify-between items-center gap-2">
+        <div>
+          <h2 class="font-extrabold text-base text-slate-800 dark:text-white" data-i18n="creditTitle">வாடிக்கையாளர் கடன் கணக்கு</h2>
+          <p class="text-[11px] text-slate-400" id="total-credit-due-sub">மொத்த நிலுவை: ₹0.00</p>
+        </div>
+        <button onclick="openCustomerModal()" class="bg-tea hover:bg-tea-dark text-white text-xs font-bold px-3 py-2 rounded-xl shadow touch-target flex items-center gap-1">
+          <span>👤➕</span> <span data-i18n="addCustomer">புதிய வாடிக்கையாளர்</span>
+        </button>
+      </div>
+
+      <!-- Customer List -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 p-3">
+        <div id="customer-items-list" class="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. MORE SCREEN (Tea Counter, Expenses, Requests, Settings) -->
+    <section id="tab-more" class="hidden space-y-4">
+      <!-- Quick Tea / Coffee Counter Tracker -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-amber-200 dark:border-slate-700">
+        <h3 class="font-extrabold text-sm text-amber-900 dark:text-amber-200 mb-2 flex items-center gap-2">
+          <span>☕</span> <span data-i18n="teaCounterTitle">டீ கவுண்டர் & மூலப்பொருட்கள்</span>
+        </h3>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <button onclick="addTeaCounterCup('டீ / Tea', 12, 4)" class="bg-amber-50 dark:bg-slate-700 hover:bg-amber-100 border border-amber-300 p-3 rounded-2xl flex flex-col items-center active:scale-95 transition touch-target">
+            <span class="text-2xl">☕</span>
+            <span class="font-bold text-xs">டீ (Tea) ₹12</span>
+          </button>
+          <button onclick="addTeaCounterCup('காபி / Coffee', 15, 5)" class="bg-amber-50 dark:bg-slate-700 hover:bg-amber-100 border border-amber-300 p-3 rounded-2xl flex flex-col items-center active:scale-95 transition touch-target">
+            <span class="text-2xl">☕</span>
+            <span class="font-bold text-xs">காபி (Coffee) ₹15</span>
+          </button>
+        </div>
+        <!-- Raw Ingredients Usage Today -->
+        <div class="bg-amber-100/50 dark:bg-slate-900/50 p-2.5 rounded-xl text-[11px] grid grid-cols-3 gap-2 text-center">
+          <div>🥛 பால்: <span id="tea-milk-used" class="font-bold text-amber-900 dark:text-amber-300">0 ml</span></div>
+          <div>🍬 சர்க்கரை: <span id="tea-sugar-used" class="font-bold text-amber-900 dark:text-amber-300">0 g</span></div>
+          <div>☕ டீ தூள்: <span id="tea-powder-used" class="font-bold text-amber-900 dark:text-amber-300">0 g</span></div>
+        </div>
+      </div>
+
+      <!-- Expense Logger -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <h3 class="font-extrabold text-sm text-slate-800 dark:text-white mb-2 flex items-center justify-between">
+          <span data-i18n="expenseTitle">💸 தினசரி செலவுகள்</span>
+          <button onclick="openExpenseModal()" class="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 font-bold px-2.5 py-1 rounded-lg">➕ செலவு சேர்</button>
+        </h3>
+        <div id="expense-items-list" class="space-y-1.5 text-xs max-h-36 overflow-y-auto">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Customer Request List (Voice Enabled) -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="font-extrabold text-sm text-slate-800 dark:text-white" data-i18n="requestTitle">📝 வாடிக்கையாளர் கேட்ட பொருட்கள்</h3>
+          <button onclick="startVoiceSearch('request')" class="text-xs bg-leaf/20 text-leaf font-bold px-2 py-1 rounded-lg flex items-center gap-1">
+            🎙️ பேசு
+          </button>
+        </div>
+        <div class="flex gap-2 mb-2">
+          <input type="text" id="request-input" placeholder="எ.கா: ஹார்லிக்ஸ் பாக்கெட்..." class="flex-1 text-xs p-2 border rounded-xl dark:bg-slate-700 dark:border-slate-600" />
+          <button onclick="addCustomerRequest()" class="bg-leaf text-white px-3 py-2 rounded-xl text-xs font-bold">சேர்</button>
+        </div>
+        <div id="request-items-list" class="space-y-1 text-xs max-h-32 overflow-y-auto">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- UPI & App Settings -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-3">
+        <h3 class="font-extrabold text-sm text-slate-800 dark:text-white" data-i18n="settingsTitle">⚙️ அமைப்புகள் (Settings)</h3>
+        
+        <!-- UPI ID Setting -->
+        <div class="space-y-1 text-xs">
+          <label class="font-bold text-slate-600 dark:text-slate-300">UPI ID (ஜிபே / போன்பே):</label>
+          <div class="flex gap-2">
+            <input type="text" id="setting-upi-id" placeholder="e.g. 9842771765@upi" class="flex-1 p-2 border rounded-xl dark:bg-slate-700 dark:border-slate-600" />
+            <button onclick="saveUpiSettings()" class="bg-tea text-white px-3 py-1.5 rounded-xl font-bold">Save</button>
+          </div>
+        </div>
+
+        <!-- Voice Reply On/Off Switch -->
+        <div class="flex items-center justify-between border-t dark:border-slate-700 pt-2 text-xs">
+          <span class="font-bold text-slate-700 dark:text-slate-300" data-i18n="voiceToggle">குரல் பதில் (Voice Output):</span>
+          <input type="checkbox" id="setting-voice-toggle" onchange="toggleVoiceOutput(this.checked)" class="w-5 h-5 accent-leaf" />
+        </div>
+      </div>
+
+      <!-- Shop Info & Contacts -->
+      <div class="bg-tea-light/30 dark:bg-slate-800/60 p-4 rounded-3xl text-center text-xs space-y-2 border border-tea-light/40">
+        <p class="font-extrabold text-tea-dark dark:text-tea-light">Saravanan Professional Grocery Store</p>
+        <p class="text-slate-500">Maintained by: SARAVANAN S P</p>
+        <div class="flex justify-center gap-3 font-bold">
+          <a href="tel:9842771765" target="_blank" onclick="handleCallClick('9842771765')" class="text-leaf underline">📞 9842771765</a>
+          <a href="tel:6380904140" target="_blank" onclick="handleCallClick('6380904140')" class="text-leaf underline">📞 6380904140</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION BAR (Fixed Mobile Navigation) -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 z-40 safe-bottom shadow-lg">
+    <div class="max-w-4xl mx-auto grid grid-cols-5 h-16 text-[10px] font-bold">
+      <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center justify-center text-tea dark:text-tea-light touch-target">
+        <span class="text-xl">🏠</span>
+        <span data-i18n="navHome">முகப்பு</span>
+      </button>
+      <button onclick="switchTab('bill')" id="nav-bill" class="flex flex-col items-center justify-center text-slate-400 touch-target">
+        <span class="text-xl">🧾</span>
+        <span data-i18n="navBill">பில் (Bill)</span>
+      </button>
+      <button onclick="switchTab('stock')" id="nav-stock" class="flex flex-col items-center justify-center text-slate-400 touch-target">
+        <span class="text-xl">📦</span>
+        <span data-i18n="navStock">சரக்கு</span>
+      </button>
+      <button onclick="switchTab('credit')" id="nav-credit" class="flex flex-col items-center justify-center text-slate-400 touch-target">
+        <span class="text-xl">📖</span>
+        <span data-i18n="navCredit">கடன்</span>
+      </button>
+      <button onclick="switchTab('more')" id="nav-more" class="flex flex-col items-center justify-center text-slate-400 touch-target">
+        <span class="text-xl">⚙️</span>
+        <span data-i18n="navMore">மேலும்</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- FLOATING SAARAL AI CHATBOT BUTTON & WINDOW -->
+  <div id="ai-chat-modal" class="hidden fixed bottom-20 right-3 left-3 sm:left-auto sm:w-96 bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border-2 border-tea z-50 overflow-hidden flex flex-col h-[430px]">
+    <div class="bg-tea text-white p-3 font-bold flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">✨</span>
+        <div>
+          <p class="text-xs font-extrabold">சாரல் AI (Saaral Voice Assistant)</p>
+          <p class="text-[10px] text-tea-light">Saravanan Store Assistant</p>
+        </div>
+      </div>
+      <button onclick="toggleAIChat()" class="text-white hover:text-red-200 text-base font-bold touch-target px-2">✕</button>
+    </div>
+
+    <!-- Messages Container -->
+    <div id="ai-chat-messages" class="flex-1 p-3 overflow-y-auto space-y-2 bg-cream/40 dark:bg-slate-900/60 text-xs">
+      <div class="bg-white dark:bg-slate-800 p-2.5 rounded-2xl text-slate-800 dark:text-slate-200 shadow-sm border border-slate-100 dark:border-slate-700">
+        வணக்கம் அண்ணா! நான் சாரல். "Sugar stock evlo?", "யார் கடன் வைத்திருக்கிறார்கள்?", "இன்றைய விற்பனை எவ்வளவு?" என்று கேளுங்கள்!
+      </div>
+    </div>
+
+    <!-- Quick Query Chips -->
+    <div class="p-2 bg-slate-100 dark:bg-slate-800 border-t border-b dark:border-slate-700 flex gap-1.5 overflow-x-auto text-[10px]">
+      <button onclick="askAIChat('Sugar stock evlo irukku?')" class="bg-white dark:bg-slate-700 border rounded-full px-2.5 py-1 shrink-0 font-bold">🍬 Sugar Stock?</button>
+      <button onclick="askAIChat('Who owes me money?')" class="bg-white dark:bg-slate-700 border rounded-full px-2.5 py-1 shrink-0 font-bold">📖 Debtors?</button>
+      <button onclick="askAIChat('Today sales report')" class="bg-white dark:bg-slate-700 border rounded-full px-2.5 py-1 shrink-0 font-bold">📊 Sales Report</button>
+    </div>
+
+    <!-- Input Box -->
+    <div class="p-2 bg-white dark:bg-slate-800 flex gap-2 items-center">
+      <button onclick="startVoiceSearch('ai')" class="p-2 bg-tea-light text-tea-dark rounded-full text-sm" title="Voice Input">🎙️</button>
+      <input type="text" id="ai-chat-input" placeholder="கேளுங்கள் / Type question..." class="flex-1 border rounded-full px-3 py-1.5 text-xs dark:bg-slate-700 dark:text-white dark:border-slate-600 focus:outline-none" onkeydown="if(event.key==='Enter') sendAIChatMessage()" />
+      <button onclick="sendAIChatMessage()" class="bg-tea text-white p-2 rounded-full font-bold text-xs">➔</button>
+    </div>
+  </div>
+
+  <button onclick="toggleAIChat()" class="fixed bottom-20 right-4 bg-tea hover:bg-tea-dark text-white p-3.5 rounded-full shadow-2xl z-40 active:scale-95 transition-transform flex items-center gap-1.5 border-2 border-white">
+    <span class="text-xl">✨</span>
+    <span class="font-extrabold text-xs hidden sm:inline">சாரல் AI</span>
+  </button>
+
+  <!-- MODALS CONTAINER -->
+
+  <!-- 1. UPI QR CODE PAYMENT MODAL -->
+  <div id="modal-upi" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 shadow-2xl text-center space-y-4 border border-slate-200 dark:border-slate-700">
+      <h3 class="font-extrabold text-base text-slate-800 dark:text-white">📱 UPI Payment QR Code</h3>
+      <p class="text-xs text-slate-500" id="upi-amount-display">Amount: ₹0.00</p>
+      
+      <!-- Generated QR Code Container -->
+      <div id="qrcode-container" class="flex justify-center p-3 bg-white rounded-2xl shadow-inner border w-48 h-48 mx-auto"></div>
+      
+      <p class="text-[11px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 p-2 rounded-xl border border-amber-200">
+        ⚠️ தயவுசெய்து உங்கள் ஜிபே/போன்பே செயலியில் பணம் வந்ததை சரிபார்க்கவும்.
+      </p>
+
+      <div class="space-y-2">
+        <a id="upi-app-link" href="#" target="_blank" class="block w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs">📱 Open UPI App</a>
+        <button onclick="confirmUpiPaymentReceived()" class="w-full bg-leaf text-white font-extrabold py-3 rounded-xl text-xs shadow active:scale-95 transition-transform">
+          ✅ Money Received (பணம் வந்தது)
+        </button>
+        <button onclick="closeModal('modal-upi')" class="w-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2 rounded-xl text-xs">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. RECEIPT & WHATSAPP MODAL -->
+  <div id="modal-receipt" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 shadow-2xl flex flex-col items-center border border-slate-200 dark:border-slate-700">
+      <div class="text-center mb-3">
+        <h3 class="font-extrabold text-base text-tea-dark dark:text-tea-light">சரவணன் புரோஃபெஷனல் மளிகை கடை</h3>
+        <p class="text-[11px] text-slate-500">SARAVANAN S P • 9842771765</p>
+        <p class="text-[10px] text-slate-400 mt-0.5" id="receipt-bill-no-date"></p>
+      </div>
+
+      <div id="receipt-items-body" class="w-full text-xs space-y-1.5 border-t border-b dark:border-slate-700 py-3 my-2 max-h-48 overflow-y-auto"></div>
+
+      <div class="w-full space-y-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-slate-500">Phone:</span>
+          <input type="tel" id="receipt-phone-input" placeholder="Customer Phone No..." class="flex-1 text-xs p-2 border rounded-xl dark:bg-slate-700 dark:text-white" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-2">
+          <button onclick="shareWhatsAppReceipt()" class="bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1 shadow">
+            💬 WhatsApp
+          </button>
+          <button onclick="copyReceiptToClipboard()" class="bg-slate-700 text-white py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1 shadow">
+            📋 Copy Bill
+          </button>
+        </div>
+        <button onclick="closeModal('modal-receipt')" class="w-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2 rounded-xl text-xs mt-1">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ADD / EDIT PRODUCT MODAL -->
+  <div id="modal-product" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+      <h3 class="font-extrabold text-sm text-slate-800 dark:text-white" id="product-modal-title">புதிய பொருள் சேர்</h3>
+      <form id="product-form" onsubmit="saveProduct(event)" class="space-y-2 text-xs">
+        <input type="hidden" id="prod-id" />
+        
+        <div class="grid grid-cols-4 gap-2">
+          <div class="col-span-1">
+            <label class="font-bold text-slate-500">Emoji:</label>
+            <input type="text" id="prod-emoji" value="📦" required class="w-full p-2 border rounded-xl text-center text-base dark:bg-slate-700 dark:text-white" />
+          </div>
+          <div class="col-span-3">
+            <label class="font-bold text-slate-500">English Name:</label>
+            <input type="text" id="prod-name-en" required class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white" />
+          </div>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-500">Tamil Name (optional):</label>
+          <input type="text" id="prod-name-ta" class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-slate-500">Selling Price (₹):</label>
+            <input type="number" step="0.01" id="prod-sell-price" required class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white" />
+          </div>
+          <div>
+            <label class="font-bold text-slate-500">Buying Price (₹):</label>
+            <input type="number" step="0.01" id="prod-buy-price" required class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-slate-500">Stock Qty:</label>
+            <input type="number" id="prod-stock" required class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white" />
+          </div>
+          <div>
+            <label class="font-bold text-slate-500">Min Level:</label>
+            <input type="number" id="prod-min-stock" value="5" required class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white" />
+          </div>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-500">Expiry Date (optional):</label>
+          <input type="date" id="prod-expiry" class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white" />
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeModal('modal-product')" class="flex-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2.5 rounded-xl">Cancel</button>
+          <button type="submit" class="flex-1 bg-leaf text-white font-extrabold py-2.5 rounded-xl">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. ADD / RECORD PAYMENT CUSTOMER MODAL -->
+  <div id="modal-customer" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+      <h3 class="font-extrabold text-sm text-slate-800 dark:text-white" id="customer-modal-title">புதிய வாடிக்கையாளர் சேர்</h3>
+      <form id="customer-form" onsubmit="saveCustomer(event)" class="space-y-2 text-xs">
+        <div>
+          <label class="font-bold text-slate-500">Name:</label>
+          <input type="text" id="cust-name" required class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white" />
+        </div>
+        <div>
+          <label class="font-bold text-slate-500">Phone Number:</label>
+          <input type="tel" id="cust-phone" required class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-slate-500">Initial Due (₹):</label>
+            <input type="number" id="cust-due" value="0" class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white" />
+          </div>
+          <div>
+            <label class="font-bold text-slate-500">Credit Limit (₹):</label>
+            <input type="number" id="cust-limit" value="1500" class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white" />
+          </div>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeModal('modal-customer')" class="flex-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2.5 rounded-xl">Cancel</button>
+          <button type="submit" class="flex-1 bg-tea text-white font-extrabold py-2.5 rounded-xl">Save Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. RECORD CUSTOMER PAYMENT MODAL -->
+  <div id="modal-pay-credit" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-3 text-xs">
+      <h3 class="font-extrabold text-sm text-slate-800 dark:text-white">💵 கடன் தொகை செலுத்துதல்</h3>
+      <p id="pay-credit-cust-info" class="font-bold text-slate-600 dark:text-slate-300"></p>
+      <input type="hidden" id="pay-credit-cust-id" />
+      <div>
+        <label class="font-bold text-slate-500">செலுத்தும் தொகை (₹):</label>
+        <input type="number" id="pay-credit-amount" required class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white text-base font-bold" />
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button type="button" onclick="closeModal('modal-pay-credit')" class="flex-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2.5 rounded-xl">Cancel</button>
+        <button type="button" onclick="submitCustomerPayment()" class="flex-1 bg-leaf text-white font-extrabold py-2.5 rounded-xl">Record Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. ADD EXPENSE MODAL -->
+  <div id="modal-expense" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-3 text-xs">
+      <h3 class="font-extrabold text-sm text-slate-800 dark:text-white">💸 புதிய செலவு பதிவு</h3>
+      <div>
+        <label class="font-bold text-slate-500">விவரம் (Title):</label>
+        <input type="text" id="expense-title" placeholder="எ.கா: கரண்ட் பில், பால் பில்..." class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white" />
+      </div>
+      <div>
+        <label class="font-bold text-slate-500">தொகை (Amount ₹):</label>
+        <input type="number" id="expense-amount" class="w-full p-2 border rounded-xl dark:bg-slate-700 dark:text-white font-bold" />
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button type="button" onclick="closeModal('modal-expense')" class="flex-1 bg-slate-200 dark:bg-slate-700 font-bold py-2.5 rounded-xl">Cancel</button>
+        <button type="button" onclick="saveExpense()" class="flex-1 bg-red-600 text-white font-extrabold py-2.5 rounded-xl">Save Expense</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. ALERTS DRAWER MODAL -->
+  <div id="modal-alerts" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-extrabold text-sm text-slate-800 dark:text-white flex items-center gap-1.5">
+          🔔 எச்சரிக்கைகள் (Alerts)
+        </h3>
+        <button onclick="speakAlertsSummary()" class="text-xs bg-tea-light text-tea-dark font-bold px-2 py-1 rounded-lg">🔊 Read Aloud</button>
+      </div>
+      <div id="modal-alerts-body" class="space-y-2 text-xs max-h-60 overflow-y-auto"></div>
+      <button onclick="closeModal('modal-alerts')" class="w-full bg-slate-200 dark:bg-slate-700 font-bold py-2 rounded-xl text-xs">Close</button>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 space-y-2 pointer-events-none w-11/12 max-w-md"></div>
+
+  <!-- CONFETTI CANVAS -->
+  <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+  <!-- JAVASCRIPT APPLICATION CORE -->
+  <script>
+    /* LOCAL STORAGE KEYS */
+    const STORAGE_PREFIX = 'saravanan_shop_';
+    const KEYS = {
+      SETTINGS: STORAGE_PREFIX + 'settings',
+      PRODUCTS: STORAGE_PREFIX + 'products',
+      CUSTOMERS: STORAGE_PREFIX + 'customers',
+      SALES: STORAGE_PREFIX + 'sales',
+      TEA: STORAGE_PREFIX + 'tea',
+      EXPENSES: STORAGE_PREFIX + 'expenses',
+      REQUESTS: STORAGE_PREFIX + 'requests'
+    };
+
+    /* INITIAL SAMPLE DATA */
+    const SAMPLE_PRODUCTS = [
+      { id: '1', emoji: '🌾', nameEn: 'Ponni Rice (1kg)', nameTa: 'பொன்னி அரிசி (1கி)', aliases: ['arisi', 'rice'], sellingPrice: 62, buyingPrice: 54, stock: 45, minStock: 10, expiryDate: '2027-06-01', category: 'grocery', isFav: true, salesCount: 85 },
+      { id: '2', emoji: '🍬', nameEn: 'White Sugar (1kg)', nameTa: 'சர்க்கரை (1கி)', aliases: ['sugar', 'sakkarai'], sellingPrice: 44, buyingPrice: 39, stock: 4, minStock: 10, expiryDate: '2027-01-01', category: 'grocery', isFav: true, salesCount: 120 },
+      { id: '3', emoji: '☕', nameEn: 'Tea Powder (250g)', nameTa: 'டீ தூள் (250கி)', aliases: ['tea', 'thool'], sellingPrice: 95, buyingPrice: 80, stock: 12, minStock: 5, expiryDate: '2026-10-10', category: 'tea', isFav: true, salesCount: 60 },
+      { id: '4', emoji: '🥛', nameEn: 'Aavin Milk (500ml)', nameTa: 'ஆவின் பால் (500மி.லி)', aliases: ['milk', 'paal'], sellingPrice: 22, buyingPrice: 19, stock: 18, minStock: 5, expiryDate: '2026-10-02', category: 'tea', isFav: false, salesCount: 150 },
+      { id: '5', emoji: '🌻', nameEn: 'Sunflower Oil (1L)', nameTa: 'சூரியகாந்தி எண்ணெய்', aliases: ['oil', 'ennai'], sellingPrice: 135, buyingPrice: 118, stock: 3, minStock: 8, expiryDate: '2027-03-01', category: 'grocery', isFav: false, salesCount: 40 },
+      { id: '6', emoji: '🍪', nameEn: 'Marie Gold Biscuits', nameTa: 'மேரி கோல்ட் பிஸ்கட்', aliases: ['biscuit', 'mariegold'], sellingPrice: 10, buyingPrice: 8, stock: 30, minStock: 10, expiryDate: '2026-12-15', category: 'tea', isFav: false, salesCount: 95 },
+      { id: '7', emoji: '🧼', nameEn: 'Bath Soap', nameTa: 'குளியல் சோப்', aliases: ['soap', 'soppu'], sellingPrice: 35, buyingPrice: 28, stock: 25, minStock: 5, expiryDate: '2028-01-01', category: 'grocery', isFav: false, salesCount: 30 },
+      { id: '8', emoji: '🥣', nameEn: 'Toor Dal (1kg)', nameTa: 'துவரம் பருப்பு (1கி)', aliases: ['dal', 'paruppu'], sellingPrice: 160, buyingPrice: 140, stock: 15, minStock: 5, expiryDate: '2027-05-01', category: 'grocery', isFav: false, salesCount: 50 },
+      { id: '9', emoji: '🧂', nameEn: 'Crystal Salt (1kg)', nameTa: 'கல் உப்பு (1கி)', aliases: ['salt', 'uppu'], sellingPrice: 20, buyingPrice: 15, stock: 40, minStock: 10, expiryDate: '2028-01-01', category: 'grocery', isFav: false, salesCount: 20 },
+      { id: '10', emoji: '🌾', nameEn: 'Wheat Flour (1kg)', nameTa: 'கோதுமை மாவு (1கி)', aliases: ['wheat', 'atta', 'maavu'], sellingPrice: 55, buyingPrice: 46, stock: 8, minStock: 10, expiryDate: '2026-10-12', category: 'grocery', isFav: false, salesCount: 35 },
+      { id: '11', emoji: '🥚', nameEn: 'Farm Eggs (6 Pack)', nameTa: 'முட்டை (6 எண்கள்)', aliases: ['egg', 'muttai'], sellingPrice: 36, buyingPrice: 30, stock: 50, minStock: 15, expiryDate: '2026-10-15', category: 'grocery', isFav: true, salesCount: 110 },
+      { id: '12', emoji: '☕', nameEn: 'Filter Coffee Powder', nameTa: 'காபி தூள் (100கி)', aliases: ['coffee'], sellingPrice: 80, buyingPrice: 65, stock: 10, minStock: 5, expiryDate: '2027-02-01', category: 'tea', isFav: false, salesCount: 25 }
+    ];
+
+    const SAMPLE_CUSTOMERS = [
+      { id: 'c1', name: 'முருகன் (Murugan)', phone: '9842771765', dueAmount: 850, creditLimit: 2000, lastPaymentDate: new Date(Date.now() - 5*86400000).toISOString() },
+      { id: 'c2', name: 'குமார் (Kumar - Main Rd)', phone: '9876543210', dueAmount: 2600, creditLimit: 2000, lastPaymentDate: new Date(Date.now() - 18*86400000).toISOString() },
+      { id: 'c3', name: 'லட்சுமி (Lakshmi)', phone: '9123456789', dueAmount: 1200, creditLimit: 1500, lastPaymentDate: new Date(Date.now() - 12*86400000).toISOString() }
+    ];
+
+    /* APP STATE */
+    let state = {
+      settings: { lang: 'ta', darkMode: false, voiceEnabled: true, upiId: '9842771765@upi', payeeName: 'SARAVANAN S P' },
+      products: [],
+      customers: [],
+      sales: [],
+      tea: { cupsSold: 64, milkUsed: 3840, sugarUsed: 320, teaPowderUsed: 256 },
+      expenses: [{ id: 'e1', date: new Date().toISOString(), title: 'Electricity Bill', amount: 350 }],
+      requests: [{ id: 'r1', date: new Date().toISOString(), item: 'Horlicks 500g', count: 3 }],
+      cart: [],
+      activeCategory: 'all',
+      pendingSale: null,
+      deleteConfirmId: null
+    };
+
+    /* DICTIONARY FOR I18N */
+    const i18n = {
+      ta: {
+        navHome: "முகப்பு", navBill: "பில் (Bill)", navStock: "சரக்கு", navCredit: "கடன்", navMore: "மேலும்",
+        todaySales: "இன்றைய விற்பனை", todayProfit: "மதிப்பிடப்பட்ட லாபம்", creditDue: "மொத்த கடன் நிலுவை",
+        lowStockCount: "இருப்பு குறைவு", expiringCount: "காலாவதி விரைவில்", teaCupsSold: "டீ விற்ற எண்ணிக்கை",
+        quickAlerts: "முக்கிய எச்சரிக்கைகள்", catAll: "அனைத்தும்", catFav: "விருப்பமானவை", catGrocery: "மளிகை", catTea: "டீ & ஸ்நாக்ஸ்",
+        currentCart: "தற்போதைய கார்ட்", selectCustomer: "வாடிக்கையாளர் (கடன் என்றால் மட்டும்):", total: "மொத்த தொகை:",
+        estProfit: "லாபம் (Profit):", cash: "ரொக்கம்", credit: "கடன்", stockTitle: "சரக்கு இருப்பு மேலாண்மை",
+        addProduct: "புதிய பொருள்", creditTitle: "வாடிக்கையாளர் கடன் கணக்கு", addCustomer: "புதிய வாடிக்கையாளர்",
+        teaCounterTitle: "டீ கவுண்டர் & மூலப்பொருட்கள்", expenseTitle: "💸 தினசரி செலவுகள்", requestTitle: "📝 வாடிக்கையாளர் கேட்ட பொருட்கள்",
+        settingsTitle: "⚙️ அமைப்புகள் (Settings)", voiceToggle: "குரல் பதில் (Voice Output):", homeSub: "இன்றைய கடை செயல்பாடு விவரங்கள்"
+      },
+      en: {
+        navHome: "Home", navBill: "Bill (POS)", navStock: "Stock", navCredit: "Credit", navMore: "More",
+        todaySales: "Today's Sales", todayProfit: "Estimated Profit", creditDue: "Total Credit Due",
+        lowStockCount: "Low Stock Items", expiringCount: "Expiring Soon", teaCupsSold: "Tea Cups Sold",
+        quickAlerts: "Critical Alerts", catAll: "All Items", catFav: "Favourites", catGrocery: "Grocery", catTea: "Tea & Snacks",
+        currentCart: "Current Cart", selectCustomer: "Customer (For Credit/Udhaar):", total: "Subtotal:",
+        estProfit: "Est. Profit:", cash: "Cash", credit: "Udhaar", stockTitle: "Inventory Management",
+        addProduct: "Add Product", creditTitle: "Customer Credit Ledger", addCustomer: "Add Customer",
+        teaCounterTitle: "Tea Counter & Ingredients", expenseTitle: "💸 Daily Expenses", requestTitle: "📝 Customer Item Requests",
+        settingsTitle: "⚙️ Settings", voiceToggle: "Voice Output Response:", homeSub: "Shop Daily Performance Summary"
+      }
+    };
+
+    /* UTILITY FUNCTIONS */
+    function getStorage(key, fallback) {
+      try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : fallback;
+      } catch (e) {
+        console.error('Storage Read Error:', e);
+        return fallback;
+      }
+    }
+
+    function setStorage(key, val) {
+      try {
+        localStorage.setItem(key, JSON.stringify(val));
+      } catch (e) {
+        console.error('Storage Write Error:', e);
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+      });
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const bg = type === 'error' ? 'bg-red-600' : type === 'success' ? 'bg-emerald-600' : 'bg-slate-800';
+      toast.className = `${bg} text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-xl flex items-center justify-between pointer-events-auto transition-all duration-300`;
+      toast.innerHTML = `<span>${escapeHtml(msg)}</span><button onclick="this.parentElement.remove()" class="ml-2 font-bold opacity-75">✕</button>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    function speak(text) {
+      if (!state.settings.voiceEnabled || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = state.settings.lang === 'ta' ? 'ta-IN' : 'en-IN';
+      
+      const voices = window.speechSynthesis.getVoices();
+      const match = voices.find(v => v.lang.includes(state.settings.lang === 'ta' ? 'ta' : 'en'));
+      if (match) utterance.voice = match;
+
+      if (state.settings.lang === 'ta' && !match && !voices.some(v => v.lang.includes('ta'))) {
+        showToast("Tamil Text-to-Speech not found in device settings.", "info");
+      }
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 60, spread: 60, origin: { x: 0.1, y: 0.9 } });
+        confetti({ particleCount: 60, spread: 60, origin: { x: 0.9, y: 0.9 } });
+      }
+    }
+
+    function handleCallClick(num) {
+      showToast(`Dialling Saravanan: ${num}`, "info");
+    }
+
+    /* INITIALIZATION */
+    function initApp() {
+      // Load saved state or default
+      state.settings = getStorage(KEYS.SETTINGS, state.settings);
+      state.products = getStorage(KEYS.PRODUCTS, SAMPLE_PRODUCTS);
+      state.customers = getStorage(KEYS.CUSTOMERS, SAMPLE_CUSTOMERS);
+      state.sales = getStorage(KEYS.SALES, []);
+      state.tea = getStorage(KEYS.TEA, state.tea);
+      state.expenses = getStorage(KEYS.EXPENSES, state.expenses);
+      state.requests = getStorage(KEYS.REQUESTS, state.requests);
+
+      // Save initial back if empty
+      setStorage(KEYS.PRODUCTS, state.products);
+      setStorage(KEYS.CUSTOMERS, state.customers);
+
+      // Apply UI Theme & Lang
+      applyTheme();
+      updateLanguageUI();
+
+      // Render UI
+      renderDashboard();
+      renderBillGrid();
+      renderStockList();
+      renderCustomerList();
+      renderMoreTab();
+      updateAlertsBadge();
+
+      document.getElementById('setting-upi-id').value = state.settings.upiId || '';
+      document.getElementById('setting-voice-toggle').checked = !!state.settings.voiceEnabled;
+    }
+
+    /* THEME & LANGUAGE SWITCHERS */
+    function toggleDarkMode() {
+      state.settings.darkMode = !state.settings.darkMode;
+      setStorage(KEYS.SETTINGS, state.settings);
+      applyTheme();
+    }
+
+    function applyTheme() {
+      if (state.settings.darkMode) {
+        document.documentElement.classList.add('dark');
+        document.getElementById('theme-icon').innerText = '☀️';
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.getElementById('theme-icon').innerText = '🌙';
+      }
+    }
+
+    function toggleLanguage() {
+      state.settings.lang = state.settings.lang === 'ta' ? 'en' : 'ta';
+      setStorage(KEYS.SETTINGS, state.settings);
+      updateLanguageUI();
+      renderDashboard();
+      renderBillGrid();
+      renderStockList();
+      renderCustomerList();
+    }
+
+    function updateLanguageUI() {
+      const l = state.settings.lang;
+      document.getElementById('lang-toggle-text').innerText = l === 'ta' ? 'EN' : 'தமிழ்';
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18n[l] && i18n[l][key]) el.innerText = i18n[l][key];
+      });
+
+      // Greeting logic
+      const hour = new Date().getHours();
+      let timeStr = l === 'ta' ? 'வணக்கம் அண்ணா' : 'Vanakkam Anna';
+      if (hour < 12) timeStr += l === 'ta' ? ' (காலை வணக்கம்)' : ' (Good Morning)';
+      else if (hour < 17) timeStr += l === 'ta' ? ' (மதிய வணக்கம்)' : ' (Good Afternoon)';
+      else timeStr += l === 'ta' ? ' (மாலை வணக்கம்)' : ' (Good Evening)';
+      document.getElementById('greeting-time').innerText = timeStr;
+    }
+
+    /* TAB NAVIGATION */
+    function switchTab(tab) {
+      ['home', 'bill', 'stock', 'credit', 'more'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        const navBtn = document.getElementById(`nav-${t}`);
+        navBtn.classList.remove('text-tea', 'dark:text-tea-light');
+        navBtn.classList.add('text-slate-400');
+      });
+
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+      const activeNav = document.getElementById(`nav-${tab}`);
+      activeNav.classList.remove('text-slate-400');
+      activeNav.classList.add('text-tea', 'dark:text-tea-light');
+    }
+
+    /* DASHBOARD RENDER */
+    function renderDashboard() {
+      // Today sales & profit calculation
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todaySales = state.sales.filter(s => s.date.startsWith(todayStr));
+      
+      const salesTotal = todaySales.reduce((acc, s) => acc + s.total, 0);
+      const profitTotal = todaySales.reduce((acc, s) => acc + s.profit, 0);
+      const creditDueTotal = state.customers.reduce((acc, c) => acc + c.dueAmount, 0);
+      
+      const lowStockList = state.products.filter(p => p.stock <= p.minStock);
+      
+      const expiringSoonList = state.products.filter(p => {
+        if (!p.expiryDate) return false;
+        const diffDays = Math.ceil((new Date(p.expiryDate) - new Date()) / (86400000));
+        return diffDays <= 15;
+      });
+
+      document.getElementById('dash-sales').innerText = `₹${salesTotal.toFixed(2)}`;
+      document.getElementById('dash-profit').innerText = `₹${profitTotal.toFixed(2)}`;
+      document.getElementById('dash-credit').innerText = `₹${creditDueTotal.toFixed(2)}`;
+      document.getElementById('dash-low-stock').innerText = `${lowStockList.length} Items`;
+      document.getElementById('dash-expiring').innerText = `${expiringSoonList.length} Items`;
+      document.getElementById('dash-tea-cups').innerText = `${state.tea.cupsSold} Cups`;
+
+      // Render Home Alerts Summary
+      const homeAlerts = document.getElementById('home-alerts-list');
+      let alertsHtml = '';
+
+      lowStockList.forEach(p => {
+        alertsHtml += `<div class="p-2 bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 rounded-xl flex justify-between items-center">
+          <span>⚠️ <b>${escapeHtml(state.settings.lang === 'ta' ? p.nameTa : p.nameEn)}</b> இருப்பு குறைவு: ${p.stock} units</span>
+          <button onclick="switchTab('stock')" class="font-bold underline">Fix</button>
+        </div>`;
+      });
+
+      expiringSoonList.forEach(p => {
+        alertsHtml += `<div class="p-2 bg-orange-50 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 rounded-xl flex justify-between items-center">
+          <span>⏳ <b>${escapeHtml(state.settings.lang === 'ta' ? p.nameTa : p.nameEn)}</b> காலாவதியாகிறது (${p.expiryDate})</span>
+          <button onclick="switchTab('stock')" class="font-bold underline">Check</button>
+        </div>`;
+      });
+
+      if (!alertsHtml) {
+        alertsHtml = `<p class="text-slate-400 italic">எச்சரிக்கைகள் எதுவுமில்லை. கடை சிறப்பாக இயங்குகிறது! (No active alerts)</p>`;
+      }
+      homeAlerts.innerHTML = alertsHtml;
+      document.getElementById('alerts-count-tag').innerText = `${lowStockList.length + expiringSoonList.length} Active`;
+    }
+
+    /* POS / BILLING LOGIC */
+    function filterBillCategory(cat) {
+      state.activeCategory = cat;
+      ['all', 'fav', 'grocery', 'tea'].forEach(c => {
+        const btn = document.getElementById(`cat-${c}`);
+        if (c === cat) {
+          btn.className = "px-3 py-2 rounded-xl font-bold bg-tea text-white shadow shrink-0 touch-target";
+        } else {
+          btn.className = "px-3 py-2 rounded-xl font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border shrink-0 touch-target";
+        }
+      });
+      renderBillGrid();
+    }
+
+    function renderBillGrid() {
+      const grid = document.getElementById('bill-product-grid');
+      let filtered = state.products;
+
+      if (state.activeCategory === 'fav') filtered = filtered.filter(p => p.isFav);
+      else if (state.activeCategory !== 'all') filtered = filtered.filter(p => p.category === state.activeCategory);
+
+      // Sort favourites and most sold first
+      filtered.sort((a, b) => (b.isFav ? 1 : 0) - (a.isFav ? 1 : 0) || b.salesCount - a.salesCount);
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<p class="col-span-full text-center text-slate-400 py-8">பொருட்கள் எதுவும் இல்லை (No items found)</p>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(p => `
+        <div class="bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 p-2.5 rounded-2xl flex flex-col justify-between relative active:scale-95 transition-transform">
+          <button onclick="toggleFavourite('${p.id}')" class="absolute top-1.5 right-1.5 text-sm p-1 touch-target">
+            ${p.isFav ? '❤️' : '🤍'}
+          </button>
+          <div onclick="addToCart('${p.id}')" class="cursor-pointer">
+            <span class="text-2xl mb-1 block">${p.emoji}</span>
+            <p class="font-extrabold text-xs text-slate-800 dark:text-slate-100 line-clamp-2">${escapeHtml(state.settings.lang === 'ta' ? p.nameTa || p.nameEn : p.nameEn)}</p>
+          </div>
+          <div onclick="addToCart('${p.id}')" class="flex justify-between items-center mt-2 cursor-pointer">
+            <span class="text-[10px] text-slate-400">Stock: ${p.stock}</span>
+            <span class="font-extrabold text-xs text-leaf dark:text-leaf-light">₹${p.sellingPrice}</span>
+          </div>
+        </div>
+      `).join('');
+
+      // Render customer select options for credit bill
+      const custSelect = document.getElementById('bill-customer-select');
+      custSelect.innerHTML = `<option value="">-- ரொக்கம் / Cash Sale --</option>` + 
+        state.customers.map(c => `<option value="${c.id}">${escapeHtml(c.name)} (Due: ₹${c.dueAmount})</option>`).join('');
+    }
+
+    function toggleFavourite(id) {
+      const p = state.products.find(item => item.id === id);
+      if (p) {
+        p.isFav = !p.isFav;
+        setStorage(KEYS.PRODUCTS, state.products);
+        renderBillGrid();
+      }
+    }
+
+    function addToCart(id) {
+      const p = state.products.find(item => item.id === id);
+      if (!p) return;
+      if (p.stock <= 0) {
+        showToast("⚠️ சரக்கு இருப்பு இல்லை! (Out of stock)", "error");
+        return;
+      }
+      
+      const inCart = state.cart.find(c => c.id === id);
+      if (inCart) {
+        if (inCart.qty + 1 > p.stock) {
+          showToast(`இருப்பு வரை மட்டுமே சேர்க்க முடியும் (${p.stock})`, "error");
+          return;
+        }
+        inCart.qty++;
+      } else {
+        state.cart.push({ ...p, qty: 1 });
+      }
+      renderCart();
+    }
+
+    function updateCartQty(id, delta) {
+      const item = state.cart.find(c => c.id === id);
+      const prod = state.products.find(p => p.id === id);
+      if (item) {
+        item.qty += delta;
+        if (prod && item.qty > prod.stock) {
+          item.qty = prod.stock;
+          showToast(`அதிகபட்ச இருப்பு: ${prod.stock}`, "error");
+        }
+        if (item.qty <= 0) {
+          state.cart = state.cart.filter(c => c.id !== id);
+        }
+      }
+      renderCart();
+    }
+
+    function clearCart() {
+      state.cart = [];
+      renderCart();
+    }
+
+    function renderCart() {
+      const list = document.getElementById('cart-items-list');
+      if (state.cart.length === 0) {
+        list.innerHTML = `<p class="text-center text-slate-400 py-6">கார்ட் காலியாக உள்ளது<br>(Cart is empty)</p>`;
+        document.getElementById('cart-total-amount').innerText = '₹0.00';
+        document.getElementById('cart-total-profit').innerText = '₹0.00';
+        return;
+      }
+
+      let subtotal = 0;
+      let profit = 0;
+
+      list.innerHTML = state.cart.map(c => {
+        const itemTotal = c.sellingPrice * c.qty;
+        const itemProfit = (c.sellingPrice - c.buyingPrice) * c.qty;
+        subtotal += itemTotal;
+        profit += itemProfit;
+
+        return `
+          <div class="flex justify-between items-center p-2 bg-white dark:bg-slate-700 rounded-xl border border-slate-100 dark:border-slate-600 shadow-sm">
+            <div class="flex-1 pr-2">
+              <p class="font-bold text-slate-800 dark:text-slate-100">${escapeHtml(state.settings.lang === 'ta' ? c.nameTa || c.nameEn : c.nameEn)}</p>
+              <p class="text-[10px] text-slate-400">₹${c.sellingPrice} x ${c.qty}</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="updateCartQty('${c.id}', -1)" class="w-6 h-6 bg-slate-200 dark:bg-slate-600 rounded-full font-bold shadow text-slate-800 dark:text-white touch-target flex items-center justify-center">-</button>
+              <span class="font-bold text-slate-900 dark:text-white">${c.qty}</span>
+              <button onclick="updateCartQty('${c.id}', 1)" class="w-6 h-6 bg-tea text-white rounded-full font-bold shadow touch-target flex items-center justify-center">+</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('cart-total-amount').innerText = `₹${subtotal.toFixed(2)}`;
+      document.getElementById('cart-total-profit').innerText = `₹${profit.toFixed(2)}`;
+    }
+
+    /* CHECKOUT PROCESSOR */
+    function handleCheckout(method) {
+      if (state.cart.length === 0) {
+        showToast("கார்ட் காலியாக உள்ளது!", "error");
+        return;
+      }
+
+      const total = state.cart.reduce((s, i) => s + (i.sellingPrice * i.qty), 0);
+      const profit = state.cart.reduce((s, i) => s + ((i.sellingPrice - i.buyingPrice) * i.qty), 0);
+      const customerId = document.getElementById('bill-customer-select').value;
+
+      if (method === 'CREDIT' && !customerId) {
+        showToast("கடனுக்கு வாடிக்கையாளரை தேர்ந்தெடுக்கவும்!", "error");
+        return;
+      }
+
+      state.pendingSale = {
+        id: 'sale_' + Date.now(),
+        billNo: 'BILL' + Math.floor(1000 + Math.random() * 9000),
+        date: new Date().toISOString(),
+        items: [...state.cart],
+        total,
+        profit,
+        method,
+        customerId
+      };
+
+      if (method === 'UPI') {
+        if (!state.settings.upiId) {
+          showToast("UPI ID அமைப்புகளில் சேமிக்கவும்!", "error");
+          switchTab('more');
+          return;
+        }
+        openUpiModal(total);
+      } else {
+        finalizeSale();
+      }
+    }
+
+    function openUpiModal(amount) {
+      document.getElementById('upi-amount-display').innerText = `Amount to Pay: ₹${amount.toFixed(2)}`;
+      const qrContainer = document.getElementById('qrcode-container');
+      qrContainer.innerHTML = '';
+
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(state.settings.upiId)}&pn=${encodeURIComponent(state.settings.payeeName)}&am=${amount}&cu=INR&tn=Grocery%20bill`;
+      document.getElementById('upi-app-link').href = upiUrl;
+
+      new QRCode(qrContainer, {
+        text: upiUrl,
+        width: 170,
+        height: 170
+      });
+
+      openModal('modal-upi');
+    }
+
+    function confirmUpiPaymentReceived() {
+      closeModal('modal-upi');
+      finalizeSale();
+    }
+
+    function finalizeSale() {
+      const sale = state.pendingSale;
+      if (!sale) return;
+
+      // Deduct stock & increment sales count
+      sale.items.forEach(cItem => {
+        const prod = state.products.find(p => p.id === cItem.id);
+        if (prod) {
+          prod.stock = Math.max(0, prod.stock - cItem.qty);
+          prod.salesCount = (prod.salesCount || 0) + cItem.qty;
+        }
+      });
+
+      // Update Udhaar if Credit sale
+      if (sale.method === 'CREDIT' && sale.customerId) {
+        const cust = state.customers.find(c => c.id === sale.customerId);
+        if (cust) {
+          cust.dueAmount += sale.total;
+        }
+      }
+
+      // Record sale
+      state.sales.push(sale);
+      setStorage(KEYS.PRODUCTS, state.products);
+      setStorage(KEYS.CUSTOMERS, state.customers);
+      setStorage(KEYS.SALES, state.sales);
+
+      // Trigger Confetti & Speech
+      triggerConfetti();
+      speak(state.settings.lang === 'ta' ? 'பணம் பெறப்பட்டது. நன்றி.' : 'Payment received. Thank you.');
+
+      // Show Receipt
+      showReceiptModal(sale);
+
+      // Reset
+      clearCart();
+      renderDashboard();
+      renderBillGrid();
+      renderStockList();
+      renderCustomerList();
+      updateAlertsBadge();
+    }
+
+    function showReceiptModal(sale) {
+      document.getElementById('receipt-bill-no-date').innerText = `#${sale.billNo} • ${new Date(sale.date).toLocaleString()}`;
+      
+      const cust = state.customers.find(c => c.id === sale.customerId);
+      document.getElementById('receipt-phone-input').value = cust ? cust.phone : '';
+
+      document.getElementById('receipt-items-body').innerHTML = `
+        <div class="font-bold text-slate-700 dark:text-slate-300 flex justify-between border-b pb-1">
+          <span>Item</span>
+          <span>Qty x Price = Sum</span>
+        </div>
+        ${sale.items.map(i => `
+          <div class="flex justify-between text-slate-600 dark:text-slate-400">
+            <span>${escapeHtml(i.nameTa || i.nameEn)}</span>
+            <span>${i.qty} x ₹${i.sellingPrice} = ₹${i.qty * i.sellingPrice}</span>
+          </div>
+        `).join('')}
+        <div class="border-t pt-1 font-black flex justify-between text-slate-900 dark:text-white text-sm">
+          <span>TOTAL (${sale.method}):</span>
+          <span>₹${sale.total.toFixed(2)}</span>
+        </div>
+      `;
+
+      openModal('modal-receipt');
+    }
+
+    function shareWhatsAppReceipt() {
+      const phone = document.getElementById('receipt-phone-input').value;
+      const sale = state.pendingSale;
+      if (!sale) return;
+
+      let billText = `*சரவணன் புரோஃபெஷனல் மளிகை கடை*\n1/128 Main Road, Tamil Nadu\n☎️ 9842771765\n---------------------\nBill #${sale.billNo}\n`;
+      sale.items.forEach(i => {
+        billText += `${i.nameTa || i.nameEn} x ${i.qty} = ₹${i.qty * i.sellingPrice}\n`;
+      });
+      billText += `---------------------\n*TOTAL: ₹${sale.total}*\nPayment: ${sale.method}\nNandri! Again Come! 🙏`;
+
+      copyReceiptToClipboard(billText);
+
+      if (phone) {
+        window.open(`https://wa.me/91${phone.replace(/\D/g,'')}?text=${encodeURIComponent(billText)}`, '_blank', 'noopener');
+      } else {
+        window.open(`https://wa.me/?text=${encodeURIComponent(billText)}`, '_blank', 'noopener');
+      }
+    }
+
+    function copyReceiptToClipboard(customText) {
+      const sale = state.pendingSale;
+      if (!sale && !customText) return;
+
+      let text = customText;
+      if (!text && sale) {
+        text = `Saravanan Grocery Store Bill #${sale.billNo} - Total: ₹${sale.total}. Thank you!`;
+      }
+
+      try {
+        navigator.clipboard.writeText(text);
+        showToast("If WhatsApp did not open, the bill is copied. Paste it in WhatsApp.", "info");
+      } catch (e) {
+        showToast("Bill text copied!", "info");
+      }
+    }
+
+    /* STOCK MANAGEMENT LOGIC */
+    function renderStockList() {
+      const container = document.getElementById('stock-items-list');
+      container.innerHTML = state.products.map(p => {
+        const isLow = p.stock <= p.minStock;
+        return `
+          <div class="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border ${isLow ? 'border-amber-400 dark:border-amber-500' : 'border-slate-200 dark:border-slate-600'} flex justify-between items-center text-xs">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">${p.emoji}</span>
+              <div>
+                <p class="font-extrabold text-slate-800 dark:text-slate-100">${escapeHtml(p.nameEn)} ${p.nameTa ? `(${escapeHtml(p.nameTa)})` : ''}</p>
+                <p class="text-slate-400">Sell: ₹${p.sellingPrice} | Buy: ₹${p.buyingPrice} | Expiry: ${p.expiryDate || 'N/A'}</p>
+                ${isLow ? '<span class="text-[9px] bg-red-500 text-white font-bold px-1.5 py-0.5 rounded-full">⚠️ LOW STOCK</span>' : ''}
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <div class="flex items-center bg-white dark:bg-slate-800 rounded-xl border p-1 shadow-sm">
+                <button onclick="adjustStock('${p.id}', -1)" class="px-2 py-0.5 text-red-600 font-bold touch-target">-1</button>
+                <span class="font-black px-2 text-slate-800 dark:text-white">${p.stock}</span>
+                <button onclick="adjustStock('${p.id}', 1)" class="px-1.5 py-0.5 text-leaf font-bold touch-target">+1</button>
+                <button onclick="adjustStock('${p.id}', 10)" class="px-1.5 py-0.5 text-leaf font-bold text-[10px] touch-target">+10</button>
+              </div>
+
+              <button onclick="editProduct('${p.id}')" class="p-1.5 bg-slate-200 dark:bg-slate-600 rounded-lg touch-target">✏️</button>
+              <button onclick="deleteProduct('${p.id}')" class="p-1.5 bg-red-100 text-red-600 rounded-lg touch-target">🗑️</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function adjustStock(id, delta) {
+      const p = state.products.find(item => item.id === id);
+      if (p) {
+        p.stock = Math.max(0, p.stock + delta);
+        setStorage(KEYS.PRODUCTS, state.products);
+        renderStockList();
+        renderDashboard();
+        renderBillGrid();
+        updateAlertsBadge();
+      }
+    }
+
+    function openProductModal(prod = null) {
+      document.getElementById('product-modal-title').innerText = prod ? "பொருள் திருத்து" : "புதிய பொருள் சேர்";
+      document.getElementById('prod-id').value = prod ? prod.id : '';
+      document.getElementById('prod-emoji').value = prod ? prod.emoji : '📦';
+      document.getElementById('prod-name-en').value = prod ? prod.nameEn : '';
+      document.getElementById('prod-name-ta').value = prod ? prod.nameTa : '';
+      document.getElementById('prod-sell-price').value = prod ? prod.sellingPrice : '';
+      document.getElementById('prod-buy-price').value = prod ? prod.buyingPrice : '';
+      document.getElementById('prod-stock').value = prod ? prod.stock : '';
+      document.getElementById('prod-min-stock').value = prod ? prod.minStock : '5';
+      document.getElementById('prod-expiry').value = prod ? prod.expiryDate || '' : '';
+
+      openModal('modal-product');
+    }
+
+    function editProduct(id) {
+      const p = state.products.find(item => item.id === id);
+      if (p) openProductModal(p);
+    }
+
+    function saveProduct(e) {
+      e.preventDefault();
+      const id = document.getElementById('prod-id').value;
+      const nameEn = document.getElementById('prod-name-en').value.trim();
+      const sellPrice = parseFloat(document.getElementById('prod-sell-price').value);
+      const buyPrice = parseFloat(document.getElementById('prod-buy-price').value);
+
+      if (sellPrice < buyPrice) {
+        if (!confirm("Warning: Selling price is less than buying price! Continue?")) return;
+      }
+
+      // Block duplicate name
+      const exists = state.products.find(p => p.id !== id && p.nameEn.toLowerCase() === nameEn.toLowerCase());
+      if (exists) {
+        showToast("அதே பெயரில் பொருள் உள்ளது! (Duplicate product name)", "error");
+        return;
+      }
+
+      const prodData = {
+        id: id || 'prod_' + Date.now(),
+        emoji: document.getElementById('prod-emoji').value || '📦',
+        nameEn,
+        nameTa: document.getElementById('prod-name-ta').value.trim(),
+        sellingPrice: sellPrice,
+        buyingPrice: buyPrice,
+        stock: parseInt(document.getElementById('prod-stock').value) || 0,
+        minStock: parseInt(document.getElementById('prod-min-stock').value) || 5,
+        expiryDate: document.getElementById('prod-expiry').value || null,
+        category: 'grocery',
+        isFav: false,
+        salesCount: 0
+      };
+
+      if (id) {
+        const idx = state.products.findIndex(p => p.id === id);
+        if (idx !== -1) state.products[idx] = { ...state.products[idx], ...prodData };
+      } else {
+        state.products.push(prodData);
+      }
+
+      setStorage(KEYS.PRODUCTS, state.products);
+      closeModal('modal-product');
+      renderStockList();
+      renderBillGrid();
+      renderDashboard();
+      showToast("பொருள் சேமிக்கப்பட்டது! (Saved)", "success");
+    }
+
+    function deleteProduct(id) {
+      if (state.deleteConfirmId === id) {
+        state.products = state.products.filter(p => p.id !== id);
+        setStorage(KEYS.PRODUCTS, state.products);
+        state.deleteConfirmId = null;
+        renderStockList();
+        renderBillGrid();
+        showToast("பொருள் நீக்கப்பட்டது! (Deleted)", "info");
+      } else {
+        state.deleteConfirmId = id;
+        showToast("உறுதியாக நீக்க மீண்டும் தொடவும் (Tap again to confirm delete)", "error");
+        setTimeout(() => state.deleteConfirmId = null, 4000);
+      }
+    }
+
+    /* CUSTOMER & CREDIT LEDGER LOGIC */
+    function renderCustomerList() {
+      const container = document.getElementById('customer-items-list');
+      const totalDue = state.customers.reduce((s, c) => s + c.dueAmount, 0);
+      document.getElementById('total-credit-due-sub').innerText = `மொத்த நிலுவை: ₹${totalDue.toFixed(2)}`;
+
+      container.innerHTML = state.customers.map(c => {
+        const daysUnpaid = Math.floor((Date.now() - new Date(c.lastPaymentDate).getTime()) / 86400000);
+        
+        let riskBadge = '<span class="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">🟢 Good</span>';
+        if (c.dueAmount > c.creditLimit || daysUnpaid > 15) {
+          riskBadge = '<span class="text-[9px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded-full">🔴 High Risk (>15d / Limit)</span>';
+        } else if (c.dueAmount > c.creditLimit * 0.8) {
+          riskBadge = '<span class="text-[9px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">🟡 Warning</span>';
+        }
+
+        return `
+          <div class="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600 flex justify-between items-center text-xs">
+            <div>
+              <p class="font-extrabold text-slate-800 dark:text-slate-100">${escapeHtml(c.name)}</p>
+              <p class="text-slate-400">☎️ ${escapeHtml(c.phone)} | Limit: ₹${c.creditLimit}</p>
+              <div class="mt-1">${riskBadge}</div>
+            </div>
+
+            <div class="text-right space-y-1">
+              <p class="font-black text-red-600 text-sm">₹${c.dueAmount.toFixed(2)}</p>
+              <div class="flex gap-1">
+                <button onclick="openPayCreditModal('${c.id}')" class="bg-leaf text-white px-2 py-1 rounded-lg text-[10px] font-bold">💵 Pay</button>
+                <button onclick="sendWhatsAppReminder('${c.id}')" class="bg-emerald-600 text-white px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-0.5">💬 Remind</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openCustomerModal() {
+      openModal('modal-customer');
+    }
+
+    function saveCustomer(e) {
+      e.preventDefault();
+      const newCust = {
+        id: 'c_' + Date.now(),
+        name: document.getElementById('cust-name').value.trim(),
+        phone: document.getElementById('cust-phone').value.trim(),
+        dueAmount: parseFloat(document.getElementById('cust-due').value) || 0,
+        creditLimit: parseFloat(document.getElementById('cust-limit').value) || 1500,
+        lastPaymentDate: new Date().toISOString()
+      };
+
+      state.customers.push(newCust);
+      setStorage(KEYS.CUSTOMERS, state.customers);
+      closeModal('modal-customer');
+      renderCustomerList();
+      renderDashboard();
+      renderBillGrid();
+      showToast("வாடிக்கையாளர் சேமிக்கப்பட்டார்!", "success");
+    }
+
+    function openPayCreditModal(id) {
+      const c = state.customers.find(cust => cust.id === id);
+      if (!c) return;
+
+      document.getElementById('pay-credit-cust-id').value = id;
+      document.getElementById('pay-credit-cust-info').innerText = `${c.name} - நிலுவை: ₹${c.dueAmount}`;
+      document.getElementById('pay-credit-amount').value = c.dueAmount;
+
+      openModal('modal-pay-credit');
+    }
+
+    function submitCustomerPayment() {
+      const id = document.getElementById('pay-credit-cust-id').value;
+      const amt = parseFloat(document.getElementById('pay-credit-amount').value) || 0;
+      
+      const c = state.customers.find(cust => cust.id === id);
+      if (c) {
+        c.dueAmount = Math.max(0, c.dueAmount - amt);
+        c.lastPaymentDate = new Date().toISOString();
+        setStorage(KEYS.CUSTOMERS, state.customers);
+        closeModal('modal-pay-credit');
+        renderCustomerList();
+        renderDashboard();
+        showToast("கடன் தொகை செலுத்தப்பட்டது!", "success");
+      }
+    }
+
+    function sendWhatsAppReminder(id) {
+      const c = state.customers.find(cust => cust.id === id);
+      if (!c) return;
+
+      const lang = state.settings.lang;
+      const msg = lang === 'ta'
+        ? `வணக்கம் ${c.name} அண்ணா, சரவணன் மளிகை கடையில் உங்கள் நிலுவை தொகை ₹${c.dueAmount}. தயவுசெய்து செலுத்தவும். நன்றி! - SARAVANAN S P (9842771765)`
+        : `Vanakkam ${c.name} Anna, your due amount at Saravanan Grocery Store is ₹${c.dueAmount}. Kindly pay when possible. Thank you! - SARAVANAN S P (9842771765)`;
+
+      window.open(`https://wa.me/91${c.phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+    }
+
+    /* MORE TAB: TEA COUNTER, EXPENSES, REQUESTS */
+    function addTeaCounterCup(name, price, margin) {
+      state.tea.cupsSold++;
+      state.tea.milkUsed += 60;
+      state.tea.sugarUsed += 5;
+      state.tea.teaPowderUsed += 4;
+
+      setStorage(KEYS.TEA, state.tea);
+      renderMoreTab();
+      renderDashboard();
+      showToast(`${name} சேர்க்கப்பட்டது! (+₹${price})`, "success");
+    }
+
+    function renderMoreTab() {
+      document.getElementById('tea-milk-used').innerText = `${state.tea.milkUsed} ml`;
+      document.getElementById('tea-sugar-used').innerText = `${state.tea.sugarUsed} g`;
+      document.getElementById('tea-powder-used').innerText = `${state.tea.teaPowderUsed} g`;
+
+      // Expenses
+      const expContainer = document.getElementById('expense-items-list');
+      expContainer.innerHTML = state.expenses.map(e => `
+        <div class="flex justify-between p-1.5 bg-slate-50 dark:bg-slate-700 rounded-lg">
+          <span>${escapeHtml(e.title)}</span>
+          <span class="font-bold text-red-600">₹${e.amount}</span>
+        </div>
+      `).join('');
+
+      // Requests
+      const reqContainer = document.getElementById('request-items-list');
+      reqContainer.innerHTML = state.requests.map(r => `
+        <div class="flex justify-between p-1.5 bg-slate-50 dark:bg-slate-700 rounded-lg">
+          <span>${escapeHtml(r.item)}</span>
+          <span class="font-bold text-leaf">${r.count} times</span>
+        </div>
+      `).join('');
+    }
+
+    function openExpenseModal() { openModal('modal-expense'); }
+
+    function saveExpense() {
+      const title = document.getElementById('expense-title').value.trim();
+      const amount = parseFloat(document.getElementById('expense-amount').value) || 0;
+
+      if (title && amount) {
+        state.expenses.push({ id: 'exp_' + Date.now(), title, amount, date: new Date().toISOString() });
+        setStorage(KEYS.EXPENSES, state.expenses);
+        closeModal('modal-expense');
+        renderMoreTab();
+        showToast("செலவு பதிவு செய்யப்பட்டது!", "info");
+      }
+    }
+
+    function addCustomerRequest(textFromVoice) {
+      const input = document.getElementById('request-input');
+      const val = textFromVoice || input.value.trim();
+
+      if (val) {
+        const exist = state.requests.find(r => r.item.toLowerCase() === val.toLowerCase());
+        if (exist) {
+          exist.count++;
+        } else {
+          state.requests.push({ id: 'req_' + Date.now(), item: val, count: 1, date: new Date().toISOString() });
+        }
+        setStorage(KEYS.REQUESTS, state.requests);
+        input.value = '';
+        renderMoreTab();
+        showToast("கோரிக்கை பதிவு செய்யப்பட்டது!", "success");
+      }
+    }
+
+    function saveUpiSettings() {
+      state.settings.upiId = document.getElementById('setting-upi-id').value.trim();
+      setStorage(KEYS.SETTINGS, state.settings);
+      showToast("UPI ID சேமிக்கப்பட்டது!", "success");
+    }
+
+    function toggleVoiceOutput(enabled) {
+      state.settings.voiceEnabled = enabled;
+      setStorage(KEYS.SETTINGS, state.settings);
+    }
+
+    /* GLOBAL SEARCH BAR LOGIC */
+    function handleGlobalSearch() {
+      const query = document.getElementById('global-search').value.toLowerCase().trim();
+      const dropdown = document.getElementById('search-results-dropdown');
+
+      if (!query) {
+        dropdown.classList.add('hidden');
+        return;
+      }
+
+      // Search products and customers
+      const matchedProds = state.products.filter(p => 
+        p.nameEn.toLowerCase().includes(query) || 
+        (p.nameTa && p.nameTa.includes(query)) ||
+        (p.aliases && p.aliases.some(a => a.toLowerCase().includes(query)))
+      );
+
+      const matchedCusts = state.customers.filter(c => c.name.toLowerCase().includes(query) || c.phone.includes(query));
+
+      if (matchedProds.length === 0 && matchedCusts.length === 0) {
+        dropdown.innerHTML = `<p class="p-2 text-xs text-slate-400">முடிவுகள் எதுவும் இல்லை (No results found)</p>`;
+        dropdown.classList.remove('hidden');
+        return;
+      }
+
+      let html = '';
+      matchedProds.forEach(p => {
+        html += `
+          <div onclick="addToCartFromSearch('${p.id}')" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl cursor-pointer flex justify-between items-center text-xs">
+            <span>${p.emoji} <b>${escapeHtml(p.nameEn)}</b> ${p.nameTa ? `(${escapeHtml(p.nameTa)})` : ''}</span>
+            <span class="font-bold text-leaf">₹${p.sellingPrice} (+ Add)</span>
+          </div>
+        `;
+      });
+
+      matchedCusts.forEach(c => {
+        html += `
+          <div onclick="selectCustomerFromSearch('${c.id}')" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl cursor-pointer flex justify-between items-center text-xs border-t">
+            <span>👤 <b>${escapeHtml(c.name)}</b> (Customer)</span>
+            <span class="font-bold text-red-600">Due: ₹${c.dueAmount}</span>
+          </div>
+        `;
+      });
+
+      dropdown.innerHTML = html;
+      dropdown.classList.remove('hidden');
+    }
+
+    function addToCartFromSearch(id) {
+      addToCart(id);
+      document.getElementById('global-search').value = '';
+      document.getElementById('search-results-dropdown').classList.add('hidden');
+      switchTab('bill');
+    }
+
+    function selectCustomerFromSearch(id) {
+      switchTab('credit');
+      document.getElementById('global-search').value = '';
+      document.getElementById('search-results-dropdown').classList.add('hidden');
+    }
+
+    /* SAARAL AI CHATBOT LOGIC */
+    function toggleAIChat() {
+      document.getElementById('ai-chat-modal').classList.toggle('hidden');
+    }
+
+    function sendAIChatMessage() {
+      const input = document.getElementById('ai-chat-input');
+      const val = input.value.trim();
+      if (val) {
+        askAIChat(val);
+        input.value = '';
+      }
+    }
+
+    function askAIChat(query) {
+      const container = document.getElementById('ai-chat-messages');
+      container.innerHTML += `<div class="bg-leaf text-white p-2 rounded-xl text-right ml-8 my-1">${escapeHtml(query)}</div>`;
+
+      let reply = "மன்னிக்கவும், தகவல் புரியவில்லை. (Sorry, I didn't get that.)";
+      const q = query.toLowerCase();
+
+      if (q.includes('sugar') || q.includes('sakkarai') || q.includes('சர்க்கரை')) {
+        const p = state.products.find(item => item.nameEn.toLowerCase().includes('sugar'));
+        reply = p ? `🍬 சர்க்கரை இருப்பு: ${p.stock} kg உள்ளது.` : "சர்க்கரை பொருள் இல்லை.";
+      } else if (q.includes('owes') || q.includes('due') || q.includes('kadan') || q.includes('கடன்')) {
+        const total = state.customers.reduce((s, c) => s + c.dueAmount, 0);
+        reply = `📖 மொத்த கடன் நிலுவை ₹${total.toFixed(2)}. முருகன், குமார் நிலுவையில் உள்ளனர்.`;
+      } else if (q.includes('sales') || q.includes('profit') || q.includes('vitpanai') || q.includes('விற்பனை')) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todaySales = state.sales.filter(s => s.date.startsWith(todayStr));
+        const salesTotal = todaySales.reduce((acc, s) => acc + s.total, 0);
+        reply = `📊 இன்றைய மொத்த விற்பனை ₹${salesTotal.toFixed(2)}.`;
+      } else if (q.includes('expir') || q.includes('காலாவதி')) {
+        reply = `⏳ 15 நாட்களுக்குள் 2 பொருட்கள் காலாவதியாகின்றன (டீ தூள், பால்).`;
+      }
+
+      setTimeout(() => {
+        container.innerHTML += `<div class="bg-white dark:bg-slate-800 p-2.5 rounded-2xl text-slate-800 dark:text-slate-200 shadow-sm border border-slate-100 dark:border-slate-700 my-1 mr-8">${reply}</div>`;
+        container.scrollTop = container.scrollHeight;
+        speak(reply);
+      }, 300);
+    }
+
+    /* SPEECH RECOGNITION API INTEGRATION */
+    function startVoiceSearch(target) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        showToast("Voice not supported in this browser.", "error");
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = state.settings.lang === 'ta' ? 'ta-IN' : 'en-IN';
+      recognition.interimResults = false;
+
+      recognition.onstart = () => showToast("பேசுங்கள்... Listening...", "info");
+      
+      recognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        if (target === 'search') {
+          document.getElementById('global-search').value = transcript;
+          handleGlobalSearch();
+        } else if (target === 'ai') {
+          askAIChat(transcript);
+        } else if (target === 'request') {
+          addCustomerRequest(transcript);
+        }
+      };
+
+      recognition.onerror = (e) => {
+        if (e.error === 'not-allowed') {
+          showToast("Open this page directly in Chrome, tap Allow for microphone", "error");
+        } else if (e.error === 'no-speech') {
+          showToast("Did not hear anything, try again", "error");
+        } else {
+          showToast("Voice Error: " + e.error, "error");
+        }
+      };
+
+      recognition.start();
+    }
+
+    /* ALERTS SYSTEM */
+    function updateAlertsBadge() {
+      const lowStock = state.products.filter(p => p.stock <= p.minStock);
+      const expiring = state.products.filter(p => p.expiryDate && Math.ceil((new Date(p.expiryDate) - new Date()) / 86400000) <= 15);
+      const totalAlerts = lowStock.length + expiring.length;
+
+      const badge = document.getElementById('alert-badge');
+      if (totalAlerts > 0) {
+        badge.innerText = totalAlerts;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    function openAlertsModal() {
+      const container = document.getElementById('modal-alerts-body');
+      let html = '';
+
+      state.products.filter(p => p.stock <= p.minStock).forEach(p => {
+        html += `<div class="p-2 bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 rounded-xl">⚠️ <b>${escapeHtml(p.nameEn)}</b> stock is low (${p.stock} units left)</div>`;
+      });
+
+      state.products.filter(p => p.expiryDate && Math.ceil((new Date(p.expiryDate) - new Date()) / 86400000) <= 15).forEach(p => {
+        html += `<div class="p-2 bg-orange-50 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 rounded-xl">⏳ <b>${escapeHtml(p.nameEn)}</b> expires on ${p.expiryDate}</div>`;
+      });
+
+      if (!html) html = `<p class="text-slate-400 text-center py-4">No active alerts.</p>`;
+      container.innerHTML = html;
+      openModal('modal-alerts');
+    }
+
+    function speakAlertsSummary() {
+      const count = document.getElementById('alert-badge').innerText;
+      speak(`You have ${count} critical stock and expiry alerts.`);
+    }
+
+    /* MODAL HELPERS */
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    // Start App
+    window.onload = initApp;
+  </script>
+</body>
+</html>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-3 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- LEFT COLUMN: POS BILLING & TEA COUNTER -->
+    <section class="lg:col-span-7 flex flex-col gap-4">
+
+      <!-- MODE SELECTOR & SEARCH -->
+      <div class="bg-white p-3 rounded-2xl shadow-sm border border-orange-100 flex flex-col gap-3">
+        <div class="flex justify-between items-center">
+          <div class="flex gap-2">
+            <button onclick="switchTab('pos')" id="tab-pos" class="px-4 py-2 rounded-xl font-bold text-sm bg-tea text-white shadow">
+              🛒 <span data-i18n="pos">பில்லிங் (POS)</span>
+            </button>
+            <button onclick="switchTab('tea')" id="tab-tea" class="px-4 py-2 rounded-xl font-bold text-sm bg-orange-100 text-tea shadow">
+              ☕ <span data-i18n="teaCounter">டீ கவுண்டர்</span>
+            </button>
+            <button onclick="switchTab('credit')" id="tab-credit" class="px-4 py-2 rounded-xl font-bold text-sm bg-orange-100 text-tea shadow">
+              📖 <span data-i18n="creditLedger">கடன்பேடு (Udhaar)</span>
+            </button>
+          </div>
+     
